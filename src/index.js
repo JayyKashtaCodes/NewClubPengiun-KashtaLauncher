@@ -4,7 +4,7 @@ const path = require("path");
 const fs = require('fs');
 
 const gotTheLock = app.requestSingleInstanceLock();
-const iconPath = path.join(__dirname, 'assets/logo.ico');
+const iconPath = path.join(__dirname, '/assets/logo.ico');
 
 const appDataPath = app.getPath('userData');
 
@@ -12,6 +12,7 @@ const cacheDir = path.join(appDataPath, 'Cache');
 
 let APP_URL = "https://newcp.net/";
 let APP_NAME = "New Club Penguin";
+let APP_ICON = iconPath;
 
 let win;
 let splash;
@@ -72,6 +73,7 @@ if (!gotTheLock) {
               }
             });
       
+            aboutWindow.setIcon(APP_ICON);
             aboutWindow.loadFile(path.join(__dirname, "about/index.html"));
       
             aboutWindow.on('closed', () => {
@@ -86,6 +88,7 @@ if (!gotTheLock) {
   };
 
   const createWindow = () => {
+
     win = new BrowserWindow({
       title: APP_NAME,
       icon: iconPath,
@@ -99,6 +102,8 @@ if (!gotTheLock) {
       },
     });
 
+    win.setIcon(APP_ICON);
+    
     win.webContents.on("new-window", (event, url) => {
       event.preventDefault();
       shell.openExternal(url);
@@ -146,7 +151,7 @@ if (!gotTheLock) {
       if (aboutWindow && !aboutWindow.isDestroyed()) {
         aboutWindow.close();
       }
-    });    
+    });
   };
 
   const setupFlashPlugin = () => {
@@ -201,12 +206,13 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     app.allowRendererProcessReuse = true;
-
+    
     if (!fs.existsSync(cacheDir)) {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
 
     splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
+    splash.setIcon(APP_ICON); 
     splash.loadFile(path.join(__dirname, "/splash/index.html"))
     setTimeout(function() {
       createMenu();
