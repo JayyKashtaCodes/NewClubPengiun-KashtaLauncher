@@ -27,13 +27,17 @@
   "license": "MIT",
   "config": {
     "forge": {
-      "packagerConfig": {"icon": "./src/assets/logo.ico"},
+      "packagerConfig": {
+        "icon": "./src/assets/logo.ico"
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
           "config": {
             "name": "newcp-kashta-launcher",
-            "options": {"icon": "./src/assets/logo.ico"}
+            "options": {
+              "icon": "./src/assets/logo.ico"
+            }
           }
         },
         {
@@ -54,6 +58,8 @@
     }
   },
   "dependencies": {
+    "@cliqz/adblocker-electron": "^1.27.1",
+    "cross-fetch": "^4.0.0",
     "custom-electron-titlebar": "^4.2.8",
     "electron-squirrel-startup": "^1.0.0"
   },

@@ -1,11 +1,17 @@
-const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator } = require("electron");
+const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator, session } = require("electron");
 const path = require("path");
+
+const fs = require('fs');
+
 const gotTheLock = app.requestSingleInstanceLock();
 const iconPath = path.join(__dirname, 'assets/logo.ico');
 
+const appDataPath = app.getPath('userData');
+
+const cacheDir = path.join(appDataPath, 'Cache');
+
 let APP_URL = "https://newcp.net/";
 let APP_NAME = "New Club Penguin";
-let APP_ICON = iconPath;
 
 let win;
 let splash;
@@ -48,32 +54,32 @@ if (!gotTheLock) {
       },
       { type: 'separator' },
       {
-          label: 'Copyright',
-          click: () => {
-              if (aboutWindow) {
-                  if (aboutWindow.isMinimized()) aboutWindow.restore();
-                  aboutWindow.focus();
-              } else {
-                  aboutWindow = new BrowserWindow({
-                      width: 800,
-                      height: 600,
-                      frame: false,
-                      autoHideMenuBar: true,
-                      webPreferences: {
-                          contextIsolation: false,
-                          plugins: true,
-                          nodeIntegration: true,
-                      }
-                  });
-
-                  aboutWindow.loadFile(path.join(__dirname, "about/index.html"));
-
-                  aboutWindow.on('closed', () => {
-                      aboutWindow = null;
-                  });
+        label: 'Copyright',
+        click: () => {
+          if (aboutWindow && !aboutWindow.isDestroyed()) {
+            if (aboutWindow.isMinimized()) aboutWindow.restore();
+            aboutWindow.focus();
+          } else {
+            aboutWindow = new BrowserWindow({
+              width: 800,
+              height: 600,
+              frame: false,
+              autoHideMenuBar: true,
+              webPreferences: {
+                contextIsolation: false,
+                plugins: true,
+                nodeIntegration: true,
               }
+            });
+      
+            aboutWindow.loadFile(path.join(__dirname, "about/index.html"));
+      
+            aboutWindow.on('closed', () => {
+              aboutWindow = null;
+            });
           }
-      }
+        }
+      }      
     ];
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -137,10 +143,10 @@ if (!gotTheLock) {
     });
 
     win.on('closed', () => {
-      if (aboutWindow) {
+      if (aboutWindow && !aboutWindow.isDestroyed()) {
         aboutWindow.close();
       }
-    });
+    });    
   };
 
   const setupFlashPlugin = () => {
@@ -196,14 +202,16 @@ if (!gotTheLock) {
   app.whenReady().then(() => {
     app.allowRendererProcessReuse = true;
 
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
+
     splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
     splash.loadFile(path.join(__dirname, "/splash/index.html"))
     setTimeout(function() {
       createMenu();
       createWindow();
     }, 4000);
-
-    win.setIcon(path.join(__dirname, "/assets/", APP_ICON));
 
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();

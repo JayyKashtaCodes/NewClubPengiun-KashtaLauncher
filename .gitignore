@@ -88,5 +88,8 @@ typings/
 # Electron-Forge
 out/
 
+# Cache Files
+*.cache
+
 # Others
 .vscode
