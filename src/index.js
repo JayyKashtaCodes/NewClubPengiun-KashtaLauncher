@@ -1,27 +1,79 @@
-const { app, BrowserWindow, shell, Menu } = require("electron");
+const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator } = require("electron");
 const path = require("path");
 const gotTheLock = app.requestSingleInstanceLock();
+const iconPath = path.join(__dirname, 'assets/logo.ico');
 
-let APP_URL = "https://game.aq.com/game/";
-let APP_NAME = "Zueira";
-let APP_ICON = "logo.ico";
+let APP_URL = "https://newcp.net/";
+let APP_NAME = "New Club Penguin";
+let APP_ICON = iconPath;
 
 let win;
+let splash;
+let aboutWindow = null;
+
+ipcMain.on('open-url', (event, url) => {
+  shell.openExternal(url)
+})
 
 if (!gotTheLock) {
   app.quit();
 } else {
   const createMenu = () => {
     const template = [
-      { role: "reload" },
-      { role: "forceReload" },
-      { role: "toggleDevTools" },
-      { type: "separator" },
-      { role: "resetZoom" },
-      { role: "zoomIn" },
-      { role: "zoomOut" },
-      { type: "separator" },
-      { role: "togglefullscreen" },
+      {
+        label: 'Menu',
+          submenu: [
+            { role: 'zoom',
+            submenu: [
+              {
+                label: 'Reset',
+                role: 'resetZoom',
+              },
+              {
+                label: 'Zoom In',
+                role: 'zoomIn',
+              },
+              { 
+                label: 'Zoom Out',
+                role: 'zoomOut',
+              },]
+            },
+            { type: 'separator' },
+            { 
+              label: 'Quit Application',
+              role: 'quit',
+              accelerator: 'CmdOrCtrl+Q'
+             }
+          ]
+      },
+      { type: 'separator' },
+      {
+          label: 'Copyright',
+          click: () => {
+              if (aboutWindow) {
+                  if (aboutWindow.isMinimized()) aboutWindow.restore();
+                  aboutWindow.focus();
+              } else {
+                  aboutWindow = new BrowserWindow({
+                      width: 800,
+                      height: 600,
+                      frame: false,
+                      autoHideMenuBar: true,
+                      webPreferences: {
+                          contextIsolation: false,
+                          plugins: true,
+                          nodeIntegration: true,
+                      }
+                  });
+
+                  aboutWindow.loadFile(path.join(__dirname, "about/index.html"));
+
+                  aboutWindow.on('closed', () => {
+                      aboutWindow = null;
+                  });
+              }
+          }
+      }
     ];
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
@@ -30,11 +82,14 @@ if (!gotTheLock) {
   const createWindow = () => {
     win = new BrowserWindow({
       title: APP_NAME,
-      icon: "/build/icon.ico",
-      autoHideMenuBar: true,
+      icon: iconPath,
+      frame: true,
+      fullscreen: true,
+      autoHideMenuBar: false,
       webPreferences: {
         contextIsolation: true,
         plugins: true,
+        nodeIntegration: true,
       },
     });
 
@@ -52,8 +107,39 @@ if (!gotTheLock) {
 
     win.once("page-title-updated", function (event, title) {
       event.preventDefault();
-      // win.title = title;
       win.title = APP_NAME;
+    });
+
+    win.webContents.on('dom-ready', () => {
+      win.webContents.insertCSS(`
+        /* Customize scrollbar */
+        ::-webkit-scrollbar {
+          width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+          background: radial-gradient(circle, rgba(0, 0, 125, 0.125), rgba(0, 0, 250, 0.125));
+        }
+        
+        ::-webkit-scrollbar-thumb {
+          background: radial-gradient(circle, #007bff, #0096ff);
+          border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+          background: radial-gradient(circle, #0056b3, #0084ff);
+        }        
+      `);
+    });
+        
+    win.webContents.on('did-finish-load', () => {
+      splash.destroy();
+    });
+
+    win.on('closed', () => {
+      if (aboutWindow) {
+        aboutWindow.close();
+      }
     });
   };
 
@@ -92,7 +178,7 @@ if (!gotTheLock) {
     app.commandLine.appendSwitch("ppapi-flash-version", "32.0.0.371");
   };
 
-  app.setAsDefaultProtocolClient(app.getName());
+  app.setAsDefaultProtocolClient(app.name);
 
   app.on("second-instance", () => {
     if (win) {
@@ -110,8 +196,12 @@ if (!gotTheLock) {
   app.whenReady().then(() => {
     app.allowRendererProcessReuse = true;
 
-    createMenu();
-    createWindow();
+    splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
+    splash.loadFile(path.join(__dirname, "/splash/index.html"))
+    setTimeout(function() {
+      createMenu();
+      createWindow();
+    }, 4000);
 
     win.setIcon(path.join(__dirname, "/assets/", APP_ICON));
 

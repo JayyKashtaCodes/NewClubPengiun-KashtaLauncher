@@ -1,11 +1,14 @@
 module.exports = {
   packagerConfig: {
-    icon: "/build/icon",
+    icon: "./src/assets/logo.ico"
   },
   rebuildConfig: {},
-  makers: [],
+  makers: [{
+    name: '@electron-forge/maker-squirrel',
+    config: {setupIcon: "./src/assets/logo.ico"}}
+  ],
   publishers: [],
   plugins: [],
   hooks: {},
-  buildIdentifier: "my-build",
+  buildIdentifier: "09042024-10000",
 };
