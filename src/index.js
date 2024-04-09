@@ -1,7 +1,16 @@
-const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator } = require("electron");
+const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator, session } = require("electron");
 const path = require("path");
+
+const { ElectronBlocker } = require('@cliqz/adblocker-electron');
+const fetch = require('cross-fetch');
+const fs = require('fs');
+
 const gotTheLock = app.requestSingleInstanceLock();
-const iconPath = path.join(__dirname, 'assets/logo.ico');
+const iconPath = path.join(__dirname, '/assets/logo.ico');
+
+const appDataPath = app.getPath('userData');
+
+const cacheDir = path.join(appDataPath, 'Cache');
 
 let APP_URL = "https://newcp.net/";
 let APP_NAME = "New Club Penguin";
@@ -48,38 +57,40 @@ if (!gotTheLock) {
       },
       { type: 'separator' },
       {
-          label: 'Copyright',
-          click: () => {
-              if (aboutWindow) {
-                  if (aboutWindow.isMinimized()) aboutWindow.restore();
-                  aboutWindow.focus();
-              } else {
-                  aboutWindow = new BrowserWindow({
-                      width: 800,
-                      height: 600,
-                      frame: false,
-                      autoHideMenuBar: true,
-                      webPreferences: {
-                          contextIsolation: false,
-                          plugins: true,
-                          nodeIntegration: true,
-                      }
-                  });
-
-                  aboutWindow.loadFile(path.join(__dirname, "about/index.html"));
-
-                  aboutWindow.on('closed', () => {
-                      aboutWindow = null;
-                  });
+        label: 'Copyright',
+        click: () => {
+          if (aboutWindow && !aboutWindow.isDestroyed()) {
+            if (aboutWindow.isMinimized()) aboutWindow.restore();
+            aboutWindow.focus();
+          } else {
+            aboutWindow = new BrowserWindow({
+              width: 800,
+              height: 600,
+              frame: false,
+              autoHideMenuBar: true,
+              webPreferences: {
+                contextIsolation: false,
+                plugins: true,
+                nodeIntegration: true,
               }
+            });
+      
+            aboutWindow.setIcon(APP_ICON);
+            aboutWindow.loadFile(path.join(__dirname, "about/index.html"));
+      
+            aboutWindow.on('closed', () => {
+              aboutWindow = null;
+            });
           }
-      }
+        }
+      }      
     ];
 
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
   };
 
   const createWindow = () => {
+
     win = new BrowserWindow({
       title: APP_NAME,
       icon: iconPath,
@@ -93,6 +104,8 @@ if (!gotTheLock) {
       },
     });
 
+    win.setIcon(APP_ICON);
+    
     win.webContents.on("new-window", (event, url) => {
       event.preventDefault();
       shell.openExternal(url);
@@ -137,7 +150,7 @@ if (!gotTheLock) {
     });
 
     win.on('closed', () => {
-      if (aboutWindow) {
+      if (aboutWindow && !aboutWindow.isDestroyed()) {
         aboutWindow.close();
       }
     });
@@ -195,15 +208,26 @@ if (!gotTheLock) {
 
   app.whenReady().then(() => {
     app.allowRendererProcessReuse = true;
+    
+    if (!fs.existsSync(cacheDir)) {
+      fs.mkdirSync(cacheDir, { recursive: true });
+    }
+    
+    ElectronBlocker.fromPrebuiltAdsAndTracking(fetch, {
+      path:  path.join(cacheDir, 'adblock.cache'),
+      read:  fs.promises.readFile,
+      write: fs.promises.writeFile,
+    }).then((blocker) => {
+      blocker.enableBlockingInSession(session.defaultSession);
+    });
 
     splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
+    splash.setIcon(APP_ICON); 
     splash.loadFile(path.join(__dirname, "/splash/index.html"))
     setTimeout(function() {
       createMenu();
       createWindow();
     }, 4000);
-
-    win.setIcon(path.join(__dirname, "/assets/", APP_ICON));
 
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
