@@ -1,6 +1,8 @@
 const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator, session } = require("electron");
 const path = require("path");
 
+const { ElectronBlocker } = require('@cliqz/adblocker-electron');
+const fetch = require('cross-fetch');
 const fs = require('fs');
 
 const gotTheLock = app.requestSingleInstanceLock();
@@ -210,6 +212,14 @@ if (!gotTheLock) {
     if (!fs.existsSync(cacheDir)) {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
+    
+    ElectronBlocker.fromPrebuiltAdsAndTracking(fetch, {
+      path:  path.join(cacheDir, 'adblock.cache'),
+      read:  fs.promises.readFile,
+      write: fs.promises.writeFile,
+    }).then((blocker) => {
+      blocker.enableBlockingInSession(session.defaultSession);
+    });
 
     splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
     splash.setIcon(APP_ICON); 
