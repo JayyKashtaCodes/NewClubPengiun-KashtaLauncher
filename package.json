@@ -1,7 +1,7 @@
 {
   "name": "newcp-kashta-launcher",
   "productName": "newcp-kashta-launcher",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "New Club Penguin Launcher Kashta Edition.",
   "main": "src/index.js",
   "build": {
@@ -28,8 +28,7 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "./src/assets/logo.ico",
-        "ignore": "/(^/src/plugins/(linux|mac)$)/"
+        "icon": "./src/assets/logo.ico"
       },
       "makers": [
         {
