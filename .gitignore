@@ -92,4 +92,13 @@ out/
 *.cache
 
 # Others
+*.og
+
+# Others
+asar.js
+
+# Others
+obfuscate.js
+
+# Others
 .vscode

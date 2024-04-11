@@ -28,7 +28,8 @@
   "config": {
     "forge": {
       "packagerConfig": {
-        "icon": "./src/assets/logo.ico"
+        "icon": "./src/assets/logo.ico",
+        "ignore": "/(^/src/plugins/(linux|mac)$)/"
       },
       "makers": [
         {
@@ -60,7 +61,6 @@
   "dependencies": {
     "@cliqz/adblocker-electron": "^1.27.1",
     "cross-fetch": "^4.0.0",
-    "custom-electron-titlebar": "^4.2.8",
     "electron-squirrel-startup": "^1.0.0"
   },
   "devDependencies": {

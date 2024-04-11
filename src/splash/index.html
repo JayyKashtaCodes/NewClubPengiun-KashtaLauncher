@@ -15,5 +15,18 @@
     </body>
     <script>
         var player = videojs('my-video', {autoplay: true});
+        var volumeSlider = document.getElementById('volume-slider');
+
+        var savedVolume = localStorage.getItem('volume');
+        player.volume(savedVolume ? savedVolume : 0.2);
+
+        volumeSlider.value = player.volume();
+        volumeSlider.addEventListener('input', function() {
+            player.volume(this.value);
+        });
+
+        player.on('volumechange', function() {
+            localStorage.setItem('volume', player.volume());
+        });
     </script>
 </html>

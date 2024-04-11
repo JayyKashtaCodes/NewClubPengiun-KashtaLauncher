@@ -1,26 +1,40 @@
 const { app, BrowserWindow, shell, Menu, webContents, ipcMain, Accelerator, session } = require("electron");
 const path = require("path");
-
+const url = require('url');
 const fs = require('fs');
 
 const gotTheLock = app.requestSingleInstanceLock();
 const iconPath = path.join(__dirname, '/assets/logo.ico');
-
 const appDataPath = app.getPath('userData');
-
 const cacheDir = path.join(appDataPath, 'Cache');
+const cacheFilePath = path.join(appDataPath, 'Cache', 'splash.cache');
 
 let APP_URL = "https://newcp.net/";
 let APP_NAME = "New Club Penguin";
 let APP_ICON = iconPath;
 
+let splashScreenShow;
 let win;
 let splash;
+let splashVolumeWindow;
 let aboutWindow = null;
+
+ipcMain.on('splash-closed', () => {
+  splashVolumeWindow = null;
+});
 
 ipcMain.on('open-url', (event, url) => {
   shell.openExternal(url)
 })
+
+if (fs.existsSync(cacheFilePath)) {
+  const cacheContent = fs.readFileSync(cacheFilePath, 'utf8');
+  const cache = JSON.parse(cacheContent);
+
+  splashScreenShow = cache.splashScreenShow;
+} else {
+  splashScreenShow = true;
+}
 
 if (!gotTheLock) {
   app.quit();
@@ -30,6 +44,55 @@ if (!gotTheLock) {
       {
         label: 'Menu',
           submenu: [
+            {
+              label: 'SplashScreen',
+              submenu: [
+                {
+                  label: 'SplashScreen Volume Control',
+                  accelerator: 'CmdOrCtrl+Shift+V',
+                  click: () => {
+                      if(splashVolumeWindow) {
+                          splashVolumeWindow.close();
+                          splashVolumeWindow = null;
+                      } else {
+                          splashVolumeWindow = new BrowserWindow({
+                              width: 400,
+                              height: 100,
+                              autoHideMenuBar: true,
+                              frame: false,
+                              alwaysOnTop: true,
+                              webPreferences: {
+                                  nodeIntegration: true,
+                                  contextIsolation: false
+                              }
+                          });
+              
+                          splashVolumeWindow.loadURL(url.format({
+                              pathname: path.join(__dirname, 'splash/volume.html'),
+                              protocol: 'file:',
+                              slashes: true
+                          }));
+              
+                          splashVolumeWindow.on('closed', () => {
+                              splashVolumeWindow = null;
+                          });
+                      }
+                  }
+                },                    
+                {
+                  label: 'Toggle SplashScreen',
+                  type: 'checkbox',
+                  checked: splashScreenShow,
+                  click: (menuItem) => {
+                      splashScreenShow = menuItem.checked;
+    
+                      const cache = { splashScreenShow: splashScreenShow };
+                      const cacheContent = JSON.stringify(cache);
+                      fs.writeFileSync(cacheFilePath, cacheContent);
+                  }
+                }
+              ]
+            },
             { role: 'zoom',
             submenu: [
               {
@@ -142,10 +205,6 @@ if (!gotTheLock) {
         }        
       `);
     });
-        
-    win.webContents.on('did-finish-load', () => {
-      splash.destroy();
-    });
 
     win.on('closed', () => {
       if (aboutWindow && !aboutWindow.isDestroyed()) {
@@ -210,17 +269,32 @@ if (!gotTheLock) {
     if (!fs.existsSync(cacheDir)) {
       fs.mkdirSync(cacheDir, { recursive: true });
     }
+    
 
-    splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
-    splash.setIcon(APP_ICON); 
-    splash.loadFile(path.join(__dirname, "/splash/index.html"))
-    setTimeout(function() {
+    if(splashScreenShow) {
+      let splash = new BrowserWindow({width: 650, height: 274, transparent: true, frame: false, alwaysOnTop: true});
+      splash.loadFile(path.join(__dirname, "/splash/index.html"));
+      
+      setTimeout(() => { 
+        createMenu();
+        createWindow();
+        splash.close(); 
+      }, 4000);
+      
+    }else{
       createMenu();
       createWindow();
-    }, 4000);
+    }
 
     app.on("activate", () => {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
+
+    window.addEventListener('message', function(event) {
+      if (typeof event.data === 'object' && event.data.volume) {
+          player.volume(event.data.volume);
+          localStorage.setItem('volume', event.data.volume);
+      }
+    }, false);
   });
 }

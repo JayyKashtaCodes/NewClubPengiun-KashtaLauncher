@@ -1068,11 +1068,6 @@ cuint@^0.2.2:
   resolved "https://registry.yarnpkg.com/cuint/-/cuint-0.2.2.tgz#408086d409550c2631155619e9fa7bcadc3b991b"
   integrity sha1-QICG1AlVDCYxFVYZ6fp7ytw7mRs=
 
-custom-electron-titlebar@^4.2.8:
-  version "4.2.8"
-  resolved "https://registry.yarnpkg.com/custom-electron-titlebar/-/custom-electron-titlebar-4.2.8.tgz#8b0d024cf372b10c9758cc512ca55498b69616da"
-  integrity sha512-JEFiOKJdSZtMh90FO90FeEqCc463ZZhuh78JxILvO9Nc0H8I9MfKekgCf6jZH6xccd3/tm1OcYOoUJi3JbXR/w==
-
 dashdash@^1.12.0:
   version "1.14.1"
   resolved "https://registry.yarnpkg.com/dashdash/-/dashdash-1.14.1.tgz#853cfa0f7cbe2fed5de20326b8dd581035f6e2f0"
