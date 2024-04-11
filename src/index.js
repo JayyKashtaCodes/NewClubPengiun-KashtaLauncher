@@ -118,7 +118,7 @@ if (!gotTheLock) {
                   app.quit();
                 }, 1000);
               }
-             }
+            }
           ]
       },
       { type: 'separator' },
