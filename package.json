@@ -1,11 +1,11 @@
 {
-  "name": "newcp-kashta-launcher",
-  "productName": "newcp-kashta-launcher",
+  "name": "newcp-kashta-launcher-ab",
+  "productName": "newcp-kashta-launcher-ab",
   "version": "1.0.0",
-  "description": "New Club Penguin Launcher Kashta Edition.",
+  "description": "New Club Penguin Launcher Kashta Edition w/ adblocker.",
   "main": "src/index.js",
   "build": {
-    "appId": "com.kashtahub.newcp",
+    "appId": "com.kashtahub-ab.newcp",
     "win": {
       "icon": "./src/assets/logo.ico"
     }

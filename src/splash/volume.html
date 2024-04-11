@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <!--<style>
+            body {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+                background-color: #f0f0f0;
+                font-family: Arial, sans-serif;
+            }
+        </style>-->
+        <link href="https://fonts.googleapis.com/css2?family=Noto+Sans&display=swap" rel="stylesheet">
+        <link rel="stylesheet" href="style.css" />
+        <style>
+            #main {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                margin: 0;
+            }
+            #main div {
+                padding-left: 1rem;
+            }
+        </style>
+    </head>
+    <body>
+        <header id="titlebar">
+        <div id="drag-region">
+
+            <div id="window-title">
+            <span>Splashscreen Volume Control</span>
+            </div>
+
+            <div id="window-controls">
+
+            <div class="button" id="close-button">
+                <img class="icon" srcset="icons/close-w-10.png 1x, icons/close-w-12.png 1.25x, icons/close-w-15.png 1.5x, icons/close-w-15.png 1.75x, icons/close-w-20.png 2x, icons/close-w-20.png 2.25x, icons/close-w-24.png 2.5x, icons/close-w-30.png 3x, icons/close-w-30.png 3.5x" draggable="false" />
+            </div>
+
+            </div>
+        </div>
+        </header>
+
+        <div id="main">
+            <div><input type="range" id="volume-slider" min="0.1" max="1" step="0.1" /></div>
+            <div><button id="default-volume">Default Volume</button></div>
+            <div><label><input type="checkbox" id="mute-audio"> Mute Audio</label></div>
+        </div>
+        <script>
+            var volumeSlider = document.getElementById('volume-slider');
+            var defaultVolumeButton = document.getElementById('default-volume');
+            var muteAudioCheckbox = document.getElementById('mute-audio');
+        
+            var savedVolume = localStorage.getItem('volume');
+            console.log(savedVolume);
+            volumeSlider.value = savedVolume ? savedVolume : 0.2;
+        
+            volumeSlider.addEventListener('input', function() {
+                window.opener.postMessage({ volume: this.value }, '*');
+            });
+        
+            volumeSlider.addEventListener('input', function() {
+                localStorage.setItem('volume', this.value);
+                console.log(localStorage.getItem('volume'));
+            });
+
+            defaultVolumeButton.addEventListener('click', function() {
+                volumeSlider.value = 0.2;
+                window.opener.postMessage({ volume: 0.2 }, '*');
+            });
+
+            muteAudioCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    window.opener.postMessage({ volume: 0 }, '*');
+                } else {
+                    window.opener.postMessage({ volume: volumeSlider.value }, '*');
+                }
+            });
+            require('./renderer.js')
+        </script>        
+    </body>
+</html>
