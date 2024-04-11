@@ -111,8 +111,13 @@ if (!gotTheLock) {
             { type: 'separator' },
             { 
               label: 'Quit Application',
-              role: 'quit',
-              accelerator: 'CmdOrCtrl+Q'
+              accelerator: 'CmdOrCtrl+Q',
+              click: () => {
+                win.loadURL(APP_URL);
+                setTimeout(() => {
+                  app.quit();
+                }, 1000);
+              }
              }
           ]
       },
