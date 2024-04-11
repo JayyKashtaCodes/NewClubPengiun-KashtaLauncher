@@ -304,11 +304,14 @@ if (!gotTheLock) {
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
 
-    window.addEventListener('message', function(event) {
-      if (typeof event.data === 'object' && event.data.volume) {
-          player.volume(event.data.volume);
-          localStorage.setItem('volume', event.data.volume);
-      }
-    }, false);
+    if (typeof window !== 'undefined') {
+      window.addEventListener('message', function(event) {
+        if (typeof event.data === 'object' && event.data.volume) {
+            player.volume(event.data.volume);
+            localStorage.setItem('volume', event.data.volume);
+        }
+      }, false);
+    } else {
+    }
   });
 }
